@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+      - 'cockroach-*'
+  pull_request:
+    branches:
+      - master
+      - 'cockroach-*'
+
+jobs:
+  build-and-test:
+    strategy:
+      matrix:
+        os: [ubuntu-24.04]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up bootstrap Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24'
+          cache: false
+
+      - name: Save GOROOT_BOOTSTRAP
+        run: echo "GOROOT_BOOTSTRAP=$(go env GOROOT)" >> "$GITHUB_ENV"
+
+      - name: Build toolchain
+        run: cd src && ./make.bash
+
+      - name: Run runtime tests
+        run: bin/go test runtime -count=1 -v
+        env:
+          GOROOT: ${{ github.workspace }}
+
+      - name: Build standard library
+        run: bin/go build std
+        env:
+          GOROOT: ${{ github.workspace }}
