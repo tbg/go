@@ -32,8 +32,8 @@ jobs:
       - name: Build toolchain
         run: cd src && ./make.bash
 
-      - name: Run runtime tests
-        run: bin/go test runtime -count=1 -v
+      - name: Run tests for forked packages
+        run: bin/go test runtime context -count=1 -v
         env:
           GOROOT: ${{ github.workspace }}
 
