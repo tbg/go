@@ -15,10 +15,10 @@ jobs:
   build-and-test:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Set up bootstrap Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
           go-version: '1.24'
           cache: false
@@ -31,16 +31,11 @@ jobs:
 
       # Run the dist test suite, skipping tests that need infrastructure
       # not available on a basic CI runner:
-      #   :race / :race-external  — need race detector build
-      #   :pie_* / :exe_external  — need PIE / external linking modes
-      #   :nolibgcc               — need specific linker config
-      #   :gofips140*             — need FIPS build configuration
-      #   test{shared,plugin}     — need shared library / plugin support
-      #   test{fortran,sanitizers} — need Fortran compiler / asan/msan
-      #   test{cshared,carchive}  — need CGO shared/archive build modes
+      #   :race / :race-external — need race detector build (dist test -race)
+      #   testfortran            — needs gfortran
       - name: Run tests
         run: |
           bin/go tool dist test -k \
-            -run '!:(race|race-external|pie_internal|pie_external|exe_external|nolibgcc|gofips140)|test(shared|plugin|fortran|sanitizers|cshared|carchive)'
+            -run '!:(race|race-external)$|testfortran'
         env:
           GOROOT: ${{ github.workspace }}
