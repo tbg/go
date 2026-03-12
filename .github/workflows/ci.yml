@@ -29,13 +29,13 @@ jobs:
       - name: Build toolchain
         run: cd src && ./make.bash
 
-      # Run the dist test suite, skipping tests that need infrastructure
-      # not available on a basic CI runner:
+      # Run the dist test suite, skipping:
       #   :race / :race-external — need race detector build (dist test -race)
       #   testfortran            — needs gfortran
+      #   relnote:check          — needs doc/next/ fragments (not on release branches)
       - name: Run tests
         run: |
           bin/go tool dist test -k \
-            -run '!:(race|race-external)$|testfortran'
+            -run '!:(race|race-external)$|testfortran|relnote:check'
         env:
           GOROOT: ${{ github.workspace }}
